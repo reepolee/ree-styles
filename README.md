@@ -36,7 +36,7 @@ workspace folder.
 - `reeStyles.targetStylesheet` - workspace-relative file for added utilities.
 - `reeStyles.exclude` - glob ignored while indexing project stylesheets.
 
-## Removing unused utilities
+## Project-wide utility maintenance
 
 Run **ree Styles: Remove All Unused Utilities** to scan the current workspace
 folder for references across HTML, REE, JavaScript, TypeScript, JSX, TSX, Vue,
