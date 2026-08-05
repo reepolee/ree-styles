@@ -1,0 +1,96 @@
+{
+	"name": "ree-styles",
+	"displayName": "ree Styles",
+	"description": "Turn Tailwind CSS utilities into maintainable project CSS with workspace-aware IntelliSense.",
+	"version": "1.0.5",
+	"publisher": "reepolee",
+	"author": {
+		"name": "Aleš Vaupotič",
+		"email": "ales@vaupotic.eu"
+	},
+	"license": "MIT",
+	"icon": "icon.png",
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/reepolee/ree-styles"
+	},
+	"bugs": {
+		"url": "https://github.com/reepolee/ree-styles/issues"
+	},
+	"homepage": "https://github.com/reepolee/ree-styles#readme",
+	"engines": {
+		"vscode": "^1.107.0"
+	},
+	"categories": [
+		"Other",
+		"Snippets"
+	],
+	"keywords": [
+		"css",
+		"tailwind",
+		"utilities",
+		"intellisense"
+	],
+	"activationEvents": [
+		"onLanguage:css",
+		"onLanguage:scss",
+		"onLanguage:less",
+		"onLanguage:tailwindcss",
+		"onLanguage:html"
+	],
+	"main": "./dist/extension.js",
+	"contributes": {
+		"commands": [
+			{
+				"command": "reeStyles.addUtility",
+				"title": "ree Styles: Add Tailwind Utility to CSS"
+			},
+			{
+				"command": "reeStyles.refreshIndex",
+				"title": "ree Styles: Refresh CSS Index"
+			},
+			{
+				"command": "reeStyles.removeAllUnusedUtilities",
+				"title": "ree Styles: Remove All Unused Utilities"
+			},
+			{
+				"command": "reeStyles.addAllUndefinedUtilities",
+				"title": "ree Styles: Add All Undefined Utilities"
+			}
+		],
+		"configuration": {
+			"title": "ree Styles",
+			"properties": {
+				"reeStyles.mode": {
+					"type": "string",
+					"enum": [
+						"auto",
+						"enabled",
+						"disabled"
+					],
+					"default": "auto",
+					"scope": "resource",
+					"description": "Enable ree Styles automatically outside Tailwind projects, always enable it, or disable it."
+				},
+				"reeStyles.targetStylesheet": {
+					"type": "string",
+					"default": "",
+					"scope": "resource",
+					"description": "Workspace-relative CSS file where missing utility definitions are added."
+				},
+				"reeStyles.exclude": {
+					"type": "string",
+					"default": "**/{node_modules,dist,build,.git}/**",
+					"description": "Glob excluded while indexing project CSS files."
+				}
+			}
+		}
+	},
+	"scripts": {
+		"build": "bun run scripts/build.js",
+		"check": "bun test && bun run build",
+		"package": "bun run scripts/package-vsix.js",
+		"update-suggestions": "bun run scripts/update-suggestions.js",
+		"vscode:prepublish": "bun run package"
+	}
+}

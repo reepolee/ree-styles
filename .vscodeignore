@@ -1,0 +1,8 @@
+.gitignore
+.vscode/
+scripts/
+src/
+test/
+node_modules/
+bun.lock
+
