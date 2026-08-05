@@ -11,7 +11,8 @@ with its declarations. For example, `mb-2` becomes
 `margin-bottom: calc(0.25rem * 2);` without inserting a nested selector.
 
 Selecting a suggestion inserts the complete CSS rule. You can also place the
-cursor on a utility name and run **ree Styles: Add Tailwind Utility to CSS**.
+cursor on a utility name and run
+<kbd>ree Styles: Add Tailwind Utility to CSS</kbd>.
 If the class already exists, ree Styles opens its definition instead of adding
 a duplicate.
 
@@ -38,13 +39,13 @@ workspace folder.
 
 ## Project-wide utility maintenance
 
-Run **ree Styles: Remove All Unused Utilities** to scan the current workspace
+Run <kbd>ree Styles: Remove All Unused Utilities</kbd> to scan the current workspace
 folder for references across HTML, REE, JavaScript, TypeScript, JSX, TSX, Vue,
 Svelte, Astro, PHP, common template files, and stylesheets. The command only
 considers standalone rules recognized by ree Styles and shows a modal preview
 before removing anything.
 
-Run **ree Styles: Add All Undefined Utilities** to perform the inverse scan.
+Run <kbd>ree Styles: Add All Undefined Utilities</kbd> to perform the inverse scan.
 Static class usages that are supported by ree Styles but missing from project
 CSS are previewed and then added together in one stylesheet update.
 
