@@ -1,5 +1,5 @@
 import { describe, expect, test } from "bun:test";
-import { generate_utility_css, generate_utility_declarations } from "../src/utility-engine.js";
+import { generate_utility_css, generate_utility_css_stub, generate_utility_declarations } from "../src/utility-engine.js";
 
 describe("Tailwind utility generation", () => {
 	test("generates spacing utilities", async () => {
@@ -33,5 +33,15 @@ describe("Tailwind utility generation", () => {
 		const declarations = await generate_utility_declarations("font-mono");
 		expect(declarations).toContain("font-family: ui-monospace");
 		expect(declarations).toContain("monospace;");
+	});
+
+	test("generates an empty stub rule for unrecognized class names", async () => {
+		const utility_css = await generate_utility_css_stub("definitely-not-a-tailwind-utility");
+		expect(utility_css).toBe(".definitely-not-a-tailwind-utility {\n\n}");
+	});
+
+	test("still generates real declarations in the stub when recognized", async () => {
+		const utility_css = await generate_utility_css_stub("mt-4");
+		expect(utility_css).toContain("margin-top: calc(0.25rem * 4)");
 	});
 });

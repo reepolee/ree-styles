@@ -1,7 +1,7 @@
 const vscode = require("vscode");
 const { register_completion_providers, get_utility_at_position } = require("./completion-providers.js");
 const { CssIndex } = require("./css-index-service.js");
-const { find_html_class_names } = require("./html-class-context.js");
+const { find_completed_class_word, find_html_class_names } = require("./html-class-context.js");
 const { ProjectState } = require("./project-state.js");
 const { create_utility_catalog } = require("./utility-catalog.js");
 const { add_all_undefined_utilities, add_utilities_to_target, remove_all_unused_utilities } = require("./utility-actions.js");
@@ -22,7 +22,7 @@ export async function activate(extension_context) {
 	const utility_catalog = create_utility_catalog();
 	const providers = register_completion_providers(css_index, project_state, utility_catalog);
 
-	const add_command = vscode.commands.registerCommand("reeStyles.addUtility", async (provided_name, provided_uri, provided_offset) => {
+	const add_command = vscode.commands.registerCommand("reeStyles.addUtility", async (provided_name, provided_uri, provided_offset, force_unrecognized) => {
 		const editor = vscode.window.activeTextEditor;
 		const source_uri = provided_uri ? vscode.Uri.parse(provided_uri) : editor?.document.uri;
 		const utility_name = provided_name ?? (editor ? get_utility_at_position(editor.document, editor.selection.active) : undefined);
@@ -39,7 +39,24 @@ export async function activate(extension_context) {
 				utility_names = attribute_names;
 			}
 		}
-		await add_utilities_to_target(utility_names, source_uri, css_index, project_state);
+		await add_utilities_to_target(utility_names, source_uri, css_index, project_state, Boolean(force_unrecognized));
+	});
+
+	const type_command = vscode.commands.registerTextEditorCommand("type", async (editor, edit_builder, type_args) => {
+		const typed_text = type_args?.text;
+		if (typed_text !== " " || editor.document.languageId !== "html") {
+			await vscode.commands.executeCommand("default:type", type_args);
+			return;
+		}
+
+		const position = editor.selection.active;
+		const line_text = editor.document.lineAt(position.line).text;
+		const completed_word = find_completed_class_word(line_text, position.character);
+		await vscode.commands.executeCommand("default:type", type_args);
+
+		if (completed_word && await project_state.is_enabled_for_uri(editor.document.uri)) {
+			await add_utilities_to_target([completed_word], editor.document.uri, css_index, project_state, true);
+		}
 	});
 
 	const refresh_command = vscode.commands.registerCommand("reeStyles.refreshIndex", async () => {
@@ -74,6 +91,7 @@ export async function activate(extension_context) {
 	extension_context.subscriptions.push(
 		...providers,
 		add_command,
+		type_command,
 		refresh_command,
 		remove_unused_command,
 		add_undefined_command,

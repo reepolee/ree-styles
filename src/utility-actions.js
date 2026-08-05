@@ -2,7 +2,7 @@ const vscode = require("vscode");
 const { usage_source_glob } = require("./extension-constants.js");
 const { discover_target_stylesheet, resolve_cleanup_stylesheet } = require("./stylesheet-discovery.js");
 const { find_standalone_class_rules, find_static_class_names, remove_class_rules, text_uses_class_name } = require("./unused-utilities.js");
-const { generate_utility_css, normalize_utility_name } = require("./utility-engine.js");
+const { generate_utility_css, generate_utility_css_stub, normalize_utility_name } = require("./utility-engine.js");
 
 function preview_detail(item_names) {
 	const preview_limit = 30;
@@ -12,7 +12,7 @@ function preview_detail(item_names) {
 	return `${preview_names.join("\n")}${remaining_text}`;
 }
 
-export async function add_utilities_to_target(utility_names, source_uri, css_index, project_state) {
+export async function add_utilities_to_target(utility_names, source_uri, css_index, project_state, force_unrecognized = false) {
 	if (!await project_state.is_enabled_for_uri(source_uri)) {
 		vscode.window.showInformationMessage("ree Styles is inactive because this workspace folder uses Tailwind. Set reeStyles.mode to enabled to override detection.");
 		return;
@@ -31,11 +31,17 @@ export async function add_utilities_to_target(utility_names, source_uri, css_ind
 		}
 
 		const utility_css = await generate_utility_css(utility_name);
-		if (!utility_css) {
-			unsupported_count += 1;
+		if (utility_css) {
+			generated_rules.push(utility_css);
 			continue;
 		}
-		generated_rules.push(utility_css);
+
+		if (force_unrecognized) {
+			generated_rules.push(await generate_utility_css_stub(utility_name));
+			continue;
+		}
+
+		unsupported_count += 1;
 	}
 
 	if (generated_rules.length === 0) {

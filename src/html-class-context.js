@@ -17,6 +17,14 @@ export function find_html_class_context(line_text, character) {
 	};
 }
 
+export function find_completed_class_word(line_text, character) {
+	const class_context = find_html_class_context(line_text, character);
+	if (!class_context || class_context.typed_text.length === 0) {
+		return undefined;
+	}
+	return class_context.typed_text;
+}
+
 export function find_html_class_names(document_text, document_offset) {
 	const attribute_pattern = /\bclass\s*=\s*(["'])([\s\S]*?)\1/gi;
 	let attribute_match = attribute_pattern.exec(document_text);

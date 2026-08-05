@@ -212,6 +212,12 @@ export async function generate_utility_css(utility_name) {
 	return format_rule(normalized_name, declarations);
 }
 
+export async function generate_utility_css_stub(utility_name) {
+	const normalized_name = normalize_utility_name(utility_name);
+	const declarations = resolve_declarations(normalized_name);
+	return format_rule(normalized_name, declarations ?? []);
+}
+
 export async function generate_utility_declarations(utility_name) {
 	const normalized_name = normalize_utility_name(utility_name);
 	const declarations = resolve_declarations(normalized_name);

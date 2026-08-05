@@ -2,7 +2,7 @@
 	"name": "ree-styles",
 	"displayName": "ree Styles",
 	"description": "Turn Tailwind CSS utilities into maintainable project CSS with workspace-aware IntelliSense.",
-	"version": "1.0.7",
+	"version": "1.0.8",
 	"publisher": "reepolee",
 	"author": {
 		"name": "Aleš Vaupotič",
