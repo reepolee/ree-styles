@@ -1,8 +1,12 @@
 const vscode = require("vscode");
-const { usage_source_glob } = require("./extension-constants.js");
+const { inline_style_target, usage_source_glob } = require("./extension-constants.js");
 const { discover_target_stylesheet, resolve_cleanup_stylesheet } = require("./stylesheet-discovery.js");
 const { find_standalone_class_rules, find_static_class_names, remove_class_rules, text_uses_class_name } = require("./unused-utilities.js");
 const { generate_utility_css, generate_utility_css_stub, normalize_utility_name } = require("./utility-engine.js");
+
+const style_close_pattern = /<\/style>/i;
+const head_close_pattern = /<\/head>/i;
+const html_close_pattern = /<\/html>/i;
 
 function preview_detail(item_names) {
 	const preview_limit = 30;
@@ -10,6 +14,28 @@ function preview_detail(item_names) {
 	const remaining_count = item_names.length - preview_names.length;
 	const remaining_text = remaining_count > 0 ? `\n...and ${remaining_count} more` : "";
 	return `${preview_names.join("\n")}${remaining_text}`;
+}
+
+async function add_utilities_to_inline_style(source_document, generated_rules) {
+	const document_text = source_document.getText();
+	const generated_css = generated_rules.join("\n\n");
+	const style_close_match = style_close_pattern.exec(document_text);
+	const workspace_edit = new vscode.WorkspaceEdit();
+
+	if (style_close_match) {
+		const insert_position = source_document.positionAt(style_close_match.index);
+		workspace_edit.insert(source_document.uri, insert_position, `${generated_css}\n`);
+	} else {
+		const head_close_match = head_close_pattern.exec(document_text);
+		const html_close_match = html_close_pattern.exec(document_text);
+		const insert_offset = head_close_match?.index ?? html_close_match?.index ?? document_text.length;
+		const insert_position = source_document.positionAt(insert_offset);
+		const style_block = `<style>\n${generated_css}\n</style>\n`;
+		workspace_edit.insert(source_document.uri, insert_position, style_block);
+	}
+
+	await vscode.workspace.applyEdit(workspace_edit);
+	await source_document.save();
 }
 
 export async function add_utilities_to_target(utility_names, source_uri, css_index, project_state, force_unrecognized = false) {
@@ -58,6 +84,13 @@ export async function add_utilities_to_target(utility_names, source_uri, css_ind
 	const source_document = await vscode.workspace.openTextDocument(source_uri);
 	const target_stylesheet = await discover_target_stylesheet(source_document, workspace_folder);
 	if (!target_stylesheet) {
+		return;
+	}
+
+	if (target_stylesheet === inline_style_target) {
+		await add_utilities_to_inline_style(source_document, generated_rules);
+		await css_index.refresh();
+		vscode.window.showInformationMessage(`Added ${generated_rules.length} utilities to a <style> block in ${vscode.workspace.asRelativePath(source_uri, false)}. ${existing_count} already defined, ${unsupported_count} unsupported.`);
 		return;
 	}
 

@@ -1,5 +1,5 @@
 const vscode = require("vscode");
-const { stylesheet_conventions, stylesheet_glob, stylesheet_selector } = require("./extension-constants.js");
+const { inline_style_target, stylesheet_conventions, stylesheet_glob, stylesheet_selector } = require("./extension-constants.js");
 const { uri_exists } = require("./vscode-utils.js");
 
 function linked_stylesheet_paths(html_text) {
@@ -57,6 +57,10 @@ export async function discover_target_stylesheet(source_document, workspace_fold
 	const css_files = await vscode.workspace.findFiles(css_pattern, exclude_pattern);
 	if (unique_candidates.length === 0 && css_files.length === 1) {
 		return vscode.workspace.asRelativePath(css_files[0], false);
+	}
+
+	if (unique_candidates.length === 0 && css_files.length === 0 && source_document.languageId === "html") {
+		return inline_style_target;
 	}
 
 	const selectable_paths = unique_candidates.length > 0

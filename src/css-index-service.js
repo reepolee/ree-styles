@@ -1,5 +1,5 @@
 const vscode = require("vscode");
-const { find_css_class_definitions } = require("./css-index.js");
+const { find_css_class_definitions, find_html_style_block_definitions } = require("./css-index.js");
 const { stylesheet_glob } = require("./extension-constants.js");
 
 export class CssIndex {
@@ -28,6 +28,32 @@ export class CssIndex {
 				const locations = this.definitions.get(file_definition.class_name) ?? [];
 				const position = new vscode.Position(file_definition.line, 0);
 				locations.push(new vscode.Location(css_file, position));
+				this.definitions.set(file_definition.class_name, locations);
+			}
+		}
+
+		if (css_files.length === 0) {
+			await this.index_html_style_blocks(exclude_pattern);
+		}
+	}
+
+	async index_html_style_blocks(exclude_pattern) {
+		const html_files = await vscode.workspace.findFiles("**/*.{html,htm}", exclude_pattern);
+
+		for (const html_file of html_files) {
+			const is_enabled = await this.project_state.is_enabled_for_uri(html_file);
+			if (!is_enabled) {
+				continue;
+			}
+
+			const file_bytes = await vscode.workspace.fs.readFile(html_file);
+			const html_text = new TextDecoder().decode(file_bytes);
+			const file_definitions = find_html_style_block_definitions(html_text);
+
+			for (const file_definition of file_definitions) {
+				const locations = this.definitions.get(file_definition.class_name) ?? [];
+				const position = new vscode.Position(file_definition.line, 0);
+				locations.push(new vscode.Location(html_file, position));
 				this.definitions.set(file_definition.class_name, locations);
 			}
 		}

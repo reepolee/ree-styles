@@ -6,6 +6,7 @@ export const stylesheet_selector = [
 ];
 
 export const html_selector = [{ language: "html" }];
+export const inline_style_target = "__inline_style__";
 export const utility_word_pattern = /!?[\w@:[\]./%-]+!?/;
 export const stylesheet_glob = "**/*.{css,scss,less,pcss,postcss}";
 export const usage_source_glob = "**/*.{html,htm,ree,js,mjs,cjs,jsx,ts,mts,cts,tsx,vue,svelte,astro,php,twig,njk,mustache,css,scss,less,pcss,postcss}";
